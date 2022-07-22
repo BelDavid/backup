@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "Backup list": {
+      "commandName": "Project",
+      "commandLineArgs": "list"
+    },
+    "Backup -h": {
+      "commandName": "Project",
+      "commandLineArgs": "-h"
+    },
+    "Backup nms --dry": {
+      "commandName": "Project",
+      "commandLineArgs": "nms --dry"
+    }
+  }
+}

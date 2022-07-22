@@ -1,0 +1,91 @@
+variables:
+  # Variables are reference by $varName format
+  # Each Variable can be used in the following variable definitions
+  windowsUser: username
+  steamID: 'xxxxxxxxxxxxxxxxx'
+  steam3ID: 'xxxxxxxxx'
+  ubisoftID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  AppData: C:\Users\$windowsUser\AppData
+
+backupsDirPath: C:\Users\$windowsUser\OneDrive\Backups\GameSaves
+
+gameConfigs:
+  # Each config must define: shortName, fullName, backupDirName, backupMethod and saveDirPath
+  # 
+
+  - shortName: factorio
+    fullName: Factorio
+    backupDirName: Factorio
+    backupMethod: listf
+    savePattern: ^(?!_autosave).+\.zip$
+    saveDirPath: $AppData\Roaming\Factorio\saves
+
+  - shortName: nms
+    fullName: No Man's Sky
+    backupDirName: NoMansSky
+    backupMethod: all
+    saveDirPath: $AppData\Roaming\HelloGames\NMS\st_$steamID
+
+  - shortName: forest
+    fullName: The Forest
+    backupDirName: TheForest
+    saveDirPath: $AppData\LocalLow\SKS\TheForest\$steamID
+    backupMethod: map
+    saveMap:
+      sp1: Singleplayer\Slot1
+      sp2: Singleplayer\Slot2
+      sp3: Singleplayer\Slot3
+      sp4: Singleplayer\Slot4
+      sp5: Singleplayer\Slot5
+      mp1: Multiplayer\Slot1
+      mp2: Multiplayer\Slot2
+      mp3: Multiplayer\Slot3
+      mp4: Multiplayer\Slot4
+      mp5: Multiplayer\Slot5
+
+  - shortName: mc
+    fullName: Minecraft
+    backupDirName: Minecraft
+    saveDirPath: $AppData\Roaming\.minecraft\saves
+    #savePattern: ''
+    backupMethod: listd
+
+  - shortName: mcs
+    fullName: Minecraft Server
+    backupDirName: Minecraft
+    saveDirPath: C:\Users\$windowsUser\OneDrive\Personal\MCserver
+    backupMethod: map
+    saveMap:
+      roboworld: roboworld
+
+  - shortName: terraria
+    fullName: Terraria
+    backupDirName: Terraria
+    saveDirPath: C:\Program Files (x86)\Steam\userdata\$steam3ID\105600
+    backupMethod: all
+
+  - shortName: ac1
+    fullName: Assassin's Creed 1
+    backupDirName: AssassinsCreed
+    saveDirPath: $AppData\Roaming\Ubisoft\Assassin's Creed\Saved Games
+    backupMethod: all
+
+  - shortName: ac2
+    fullName: Assassin's Creed 2
+    backupDirName: AssassinsCreed
+    saveDirPath: >-
+      C:\Program Files (x86)\Ubisoft\Ubisoft Game
+      Launcher\savegames\$ubisoftID\4
+    backupMethod: all
+
+  - shortName: overcooked-all
+    fullName: Overcooked All you can eat
+    backupDirName: Overcooked
+    saveDirPath: $AppData\LocalLow\Team17\Overcooked All You Can Eat\$steamID
+    backupMethod: all
+
+  - shortName: overcooked2
+    fullName: Overcooked 2
+    backupDirName: Overcooked
+    saveDirPath: $AppData\LocalLow\Team17\Overcooked2\$steamID
+    backupMethod: all
