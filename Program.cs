@@ -29,7 +29,7 @@ if (paramsState != ParamsState.Correct)
 {
     if (paramsState == ParamsState.InvalidError)
     {
-        PrettyPrint.ErrorWriteLine("Passed arguments are not valid, exiting.", ConsoleColor.Red);
+        PrettyPrint.ErrorWriteLine("Passed arguments are not valid.", ConsoleColor.Red);
     }
     Environment.ExitCode = 1;
     return;
@@ -49,7 +49,7 @@ if (!Path.IsPathRooted(configFileName))
         configFilePath = Path.Combine(exeLocation, configFileName);
         if (!File.Exists(configFilePath))
         {
-            PrettyPrint.ErrorWriteLine($"Unable to locate the config file '{configFileName}'! Exiting.", ConsoleColor.Red);
+            PrettyPrint.ErrorWriteLine($"Unable to locate the config file '{configFileName}'!", ConsoleColor.Red);
             Environment.ExitCode = 1;
             return;
         }
@@ -60,7 +60,7 @@ else
     configFilePath = configFileName;
     if (!File.Exists(configFilePath))
     {
-        PrettyPrint.ErrorWriteLine($"Unable to locate the config file at '{configFileName}'! Exiting.", ConsoleColor.Red);
+        PrettyPrint.ErrorWriteLine($"Unable to locate the config file at '{configFileName}'!", ConsoleColor.Red);
         Environment.ExitCode = 1;
         return;
     }
@@ -74,12 +74,12 @@ try
 catch (Exception ex)
 {
     PrettyPrint.ErrorWriteLine($"{ex.Message}", ConsoleColor.Red);
-    PrettyPrint.ErrorWriteLine($"Failed to load config data from '{configFileName}'. Exiting.", ConsoleColor.Red);
+    PrettyPrint.ErrorWriteLine($"Failed to load config data from '{configFileName}'.", ConsoleColor.Red);
     Environment.ExitCode = 1;
     return;
 }
 
-Config config;
+Config config = null;
 var fileInfo = new FileInfo(configFilePath);
 
 if (fileInfo.Extension == ".json")
@@ -91,7 +91,7 @@ if (fileInfo.Extension == ".json")
     catch (Exception ex)
     {
         PrettyPrint.ErrorWriteLine(ex.Message, ConsoleColor.Red);
-        PrettyPrint.ErrorWriteLine("Failed to Parse JSON config file. Exiting.", ConsoleColor.Red);
+        PrettyPrint.ErrorWriteLine("Failed to Parse JSON config file.", ConsoleColor.Red);
         Environment.ExitCode = 1;
         return;
     }
@@ -108,7 +108,7 @@ else if (fileInfo.Extension == ".yaml" || fileInfo.Extension == ".yml")
     catch (Exception ex)
     {
         PrettyPrint.ErrorWriteLine(ex.Message, ConsoleColor.Red);
-        PrettyPrint.ErrorWriteLine("Failed to Parse YAML config file. Exiting.", ConsoleColor.Red);
+        PrettyPrint.ErrorWriteLine("Failed to Parse YAML config file.", ConsoleColor.Red);
         Environment.ExitCode = 1;
         return;
     }
@@ -116,13 +116,18 @@ else if (fileInfo.Extension == ".yaml" || fileInfo.Extension == ".yml")
 else
 {
     PrettyPrint.ErrorWriteLine("Unsupported Config type. Use JSON, or YAML/YML. (Extension must match the type.)", ConsoleColor.Red);
+}
+
+if (config is null)
+{
+    PrettyPrint.ErrorWriteLine("No data loaded from the config file!", ConsoleColor.Red);
     Environment.ExitCode = 1;
     return;
 }
 
 if (!config.ValidateAndBuild())
 {
-    PrettyPrint.ErrorWriteLine("Failed to Validate the config file. Exiting.", ConsoleColor.Red);
+    PrettyPrint.ErrorWriteLine("Failed to Validate the config data.", ConsoleColor.Red);
     Environment.ExitCode = 1;
     return;
 }
@@ -353,7 +358,7 @@ if (!Directory.Exists(backupDir))
     }
     catch (Exception)
     {
-        PrettyPrint.ErrorWriteLine($" - Failed to create directory '{savePath}'. Exiting.", ConsoleColor.Red);
+        PrettyPrint.ErrorWriteLine($" - Failed to create directory '{savePath}'.", ConsoleColor.Red);
         Environment.ExitCode = 1;
         return;
     }
