@@ -13,7 +13,7 @@ namespace Backup
 #pragma warning disable 8604
     internal class Config
     {
-        // -- JSON --
+        // -- DATA --
         public Dictionary<string, string>? variables;
         public string? backupsDirPath;
 
@@ -122,6 +122,7 @@ namespace Backup
 
     internal class GameConfig
     {
+        // -- DATA --
         public string? shortName;
         public string? fullName;
         public string? backupDirName;
@@ -133,7 +134,9 @@ namespace Backup
         public Dictionary<string, string> saveMap;
 
         private BackupMethods __backupMethod;
+        // ----------
         public BackupMethods BackupMethod => __backupMethod;
+
         public bool ValidateAndBuild(Config config)
         {
             bool valid = true;

@@ -14,7 +14,7 @@
   
    
 # Backup Config File
-Default value: backup-config.json  
+Default value: backup-config.yaml  
 Can be overriden with -C, --config parameter  
 
 If a relative path is specified, the script looks for the config file in the working directory and the directory where the executable is located, respectively.    
