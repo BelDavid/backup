@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace Backup
 {
-    internal sealed class Parameters: IEnumerable<Parameter>
+    public sealed class Parameters: IEnumerable<Parameter>
     {
         private readonly Parameter[] parameters;
         private readonly Dictionary<string, Parameter> parameterMap;
@@ -422,7 +422,7 @@ namespace Backup
     /// Bit #0: Correctness. 1=Correct
     /// Bit #1: Cleanliness. 1=Clean
     /// </summary>
-    internal enum ParamsState
+    public enum ParamsState
     {
         /// <summary>
         /// Params are set correctly
