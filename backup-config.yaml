@@ -5,7 +5,7 @@ variables:
   #    - following variable declarations
   #    - backupsDirPath
   #    - gameConfigs[*].saveDirPath
-  #    - gameConfigs[*].saveMap[*]  (value)
+  #    - gameConfigs[*].saveMap[*]  (value only)
   windowsUser: username
   steamID: xxxxxxxxxxxxxxxxx
   steam3ID: xxxxxxxxx
