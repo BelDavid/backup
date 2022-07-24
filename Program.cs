@@ -8,19 +8,19 @@ using System.Runtime.InteropServices;
 
 
 #region === Set Parameters ===
-var paramGame = new Parameter<string>('g', "game", true, "A shortName of the game to backup up. Must be defined in the config file. Pass value 'list' to list all supported games.");
-var paramSave = new Parameter<string>('s', "save", false, "Specify a specificic save withing the given game.");
-var paramNote = new Parameter<string>('n', "note", false, "Append a short note to the backup file name.");
+var paramGame = new Parameter<string>('g', "game", "A shortName of the game to backup up. Must be defined in the config file. Pass value 'list' to list all supported games.", mandatory: true);
+var paramSave = new Parameter<string>('s', "save", "Specify a specificic save withing the given game.");
+var paramNote = new Parameter<string>('n', "note", "Append a short note to the backup file name.");
 
-var paramPermanent = new SwitchParameter('p', "permanent", false, "Make backup immune to the -clear parameter.");
-var paramClear = new SwitchParameter('c', "clear", false, "Clear old temporary saves, but keep 10 newest saves.");
-var paramKeepCount = new Parameter<int>('k', "keepCount", false, $"Overrides the default count for --{paramClear.LongName} parameter. Valid range [2, 99 999].", defaultValue: 10, constrain: i => i >= 2 && i <= 99_999);
+var paramPermanent = new SwitchParameter('p', "permanent", "Make backup immune to the -clear parameter.");
+var paramClear = new SwitchParameter('c', "clear", "Clear old temporary saves, but keep 10 newest saves.");
+var paramKeepCount = new Parameter<int>('k', "keepCount", $"Overrides the default count for --{paramClear.LongName} parameter. Valid range [2, 99 999].", defaultValue: 10, constrain: i => i >= 2 && i <= 99_999);
 
-var paramOpen = new SwitchParameter('o', "open", false, "Open backup folder.");
-var paramDryRun = new SwitchParameter('d', "dry", false, "Run the script without actually doing anything");
-var paramForce = new SwitchParameter('f', "force", false, "Ignores whether files changed. Create backup anyway");
+var paramOpen = new SwitchParameter('o', "open", "Open backup folder.");
+var paramDryRun = new SwitchParameter('d', "dry", "Run the script without actually doing anything");
+var paramForce = new SwitchParameter('f', "force", "Ignores whether files changed. Create backup anyway");
 
-var paramConfig = new Parameter<string>('C', "config", false, "Custom path to the config file", defaultValue: "backup-config.yaml");
+var paramConfig = new Parameter<string>('C', "config", "Custom path to the config file", defaultValue: "backup-config.yaml");
 
 var parameters = new Parameters(paramGame, paramSave, paramNote, paramPermanent, paramClear, paramKeepCount, paramOpen, paramForce, paramDryRun, paramConfig);
 var paramsState = parameters.Evaluate(args);

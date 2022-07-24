@@ -17,7 +17,7 @@ namespace Backup
         private readonly Regex regexFlags = new("^-([^-].*)$");
         private readonly Regex regexPlainValue = new ("^[^-=][^=]*$");
 
-        public readonly Parameter paramHelp = new SwitchParameter('h', "help", false, "Print detailed info about parameters.");
+        public readonly Parameter paramHelp = new SwitchParameter('h', "help", "Print detailed info about parameters.");
 
         public readonly string skipParamValue = "-";
 
@@ -331,13 +331,13 @@ namespace Backup
         public char Flag { get; init; }
         public string LongName { get; init; }
         public string LongNameLowered { get; init; }
-        public bool Mandatory { get; init; }
         public string Description { get; init; }
+        public bool Mandatory { get; init; }
 
         public bool IsSet { get; protected set; }
         public bool HasDefaultValue { get; init; }
 
-        public Parameter(char flag, string longName, bool mandatory, string description)
+        public Parameter(char flag, string longName, string description, bool mandatory)
         {
             // Ensure flag is alphabetic symbol
             if (!(flag >= 'a' &&  flag <= 'z' || flag >= 'A' && flag <= 'Z'))
@@ -347,8 +347,8 @@ namespace Backup
             this.Flag = flag;
             this.LongName = longName;
             this.LongNameLowered = longName.ToLower();
-            this.Mandatory = mandatory;
             this.Description = description;
+            this.Mandatory = mandatory;
         }
 
         public abstract Type GetValueType();
@@ -365,7 +365,7 @@ namespace Backup
         public T? Value { get; private set; }
         public readonly Func<T, bool> constrain;
 
-        public Parameter(char flag, string longName, bool mandatory, string description, Func<T, bool>? constrain = null, T? defaultValue = default): base(flag, longName, mandatory, description)
+        public Parameter(char flag, string longName, string description, bool mandatory = false, Func<T, bool>? constrain = null, T? defaultValue = default): base(flag, longName, description, mandatory)
         {
             Value = defaultValue;
             HasDefaultValue = defaultValue != null;
@@ -398,7 +398,7 @@ namespace Backup
 
     public sealed class SwitchParameter : Parameter
     {
-        public SwitchParameter(char flag, string longName, bool mandatory, string description) : base(flag, longName, mandatory, description) { }
+        public SwitchParameter(char flag, string longName, string description) : base(flag, longName, description, false) { }
 
         public override object? GetValueAsObject() => IsSet;
         public bool GetValue() => IsSet;
