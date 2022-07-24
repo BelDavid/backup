@@ -350,15 +350,15 @@ else
 
 if (!Directory.Exists(backupDir))
 {
-    PrettyPrint.WriteLine($"Directory '{savePath}' does not exist. Creating.", ConsoleColor.Blue);
+    PrettyPrint.WriteLine($"Directory '{backupDir}' does not exist. Creating.", ConsoleColor.Blue);
     try
     {
         Directory.CreateDirectory(backupDir);
-        PrettyPrint.WriteLine($" - Directory '{savePath}' successfully created.", ConsoleColor.Green);
+        PrettyPrint.WriteLine($" - Directory '{backupDir}' successfully created.", ConsoleColor.Green);
     }
     catch (Exception)
     {
-        PrettyPrint.ErrorWriteLine($" - Failed to create directory '{savePath}'.", ConsoleColor.Red);
+        PrettyPrint.ErrorWriteLine($" - Failed to create directory '{backupDir}'.", ConsoleColor.Red);
         Environment.ExitCode = 1;
         return;
     }
@@ -386,7 +386,7 @@ switch (saveType)
         latestWriteTime = saveFileInfo.LastWriteTime;
         break;
     default:
-        PrettyPrint.ErrorWriteLine("Unexpected save type. Aborting", ConsoleColor.Red);
+        PrettyPrint.ErrorWriteLine("Unexpected save type.", ConsoleColor.Red);
         Environment.ExitCode = 1;
         return;
 }
