@@ -6,10 +6,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <SignAssembly>False</SignAssembly>
-    <Configurations>Debug;Release;Release Windows;Release Linux</Configurations>
+    <Configurations>Debug;Release;ReleaseWindows;ReleaseLinux</Configurations>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Windows|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWindows|AnyCPU'">
     <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
     <Optimize>True</Optimize>
   </PropertyGroup>
@@ -18,7 +18,7 @@
     <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Linux|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLinux|AnyCPU'">
     <DefineConstants>$(DefineConstants);LINUX</DefineConstants>
     <Optimize>True</Optimize>
   </PropertyGroup>

@@ -85,14 +85,14 @@
             "backupMethod": "all"
         },
         {
-            "shortName": "overcooked-all",
+            "shortName": "oc-all",
             "fullName": "Overcooked All you can eat",
             "backupDirName": "Overcooked",
             "saveDirPath": "$AppData\\LocalLow\\Team17\\Overcooked All You Can Eat\\$steamID",
             "backupMethod": "all"
         },
         {
-            "shortName": "overcooked2",
+            "shortName": "oc2",
             "fullName": "Overcooked 2",
             "backupDirName": "Overcooked",
             "saveDirPath": "$AppData\\LocalLow\\Team17\\Overcooked2\\$steamID",
