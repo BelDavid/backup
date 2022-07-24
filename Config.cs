@@ -194,6 +194,10 @@ namespace Backup
                                 PrettyPrint.ErrorWriteLine($"[Config] Invalid value in '{nameof(Config.gameConfigs)}[{nameof(shortName)}: {shortName}].{nameof(saveMap)}[{key}]'. Can not be null, empty, or white space.", ConsoleColor.Red);
                                 valid = false;
                             }
+                            else
+                            {
+                                saveMap[key] = val.SubstituteVariables(config);
+                            }
                         }
                     }
                     break;

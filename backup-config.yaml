@@ -1,30 +1,47 @@
 variables:
   # Variables are reference by $varName format
-  # Each Variable can be used in the following variable definitions
+  #  - Variable referencing is case insensitive
+  #  - Variables can be used in:
+  #    - following variable declarations
+  #    - backupsDirPath
+  #    - gameConfigs[*].saveDirPath
+  #    - gameConfigs[*].saveMap[*]  (value)
   windowsUser: username
-  steamID: 'xxxxxxxxxxxxxxxxx'
-  steam3ID: 'xxxxxxxxx'
+  steamID: xxxxxxxxxxxxxxxxx
+  steam3ID: xxxxxxxxx
   ubisoftID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   AppData: C:\Users\$windowsUser\AppData
 
+# Parent directory where all backups will be saved is subdirectories.
 backupsDirPath: C:\Users\$windowsUser\OneDrive\Backups\GameSaves
 
 gameConfigs:
-  # Each config must define: shortName, fullName, backupDirName, backupMethod and saveDirPath
-  # 
+  # Each config must define:
+  #  - shortName:       a reference name passed to the parameter -g, --game
+  #  - fullName:        fancy name used in output messages
+  #  - backupDirName:   name of the subdirectory in 'backupsDirPath' to store created backups (Created if doesn't exist)
+  #  - saveDirPath:     directory containing game saves to backup
+  #  - backupMethod:    all | map | listf | listd  (consult README.md for more information)
+  #       - all:    backup whole directory or file defined in 'saveDirPath'
+  #       - map:    backup a directory or file further specified in 'saveMap'.   saveDirPath/saveMap[`key`]  where `key` is provided by -s, --save parameter
+  #       - listd:  backup a subdirectory located in 'saveDirPath'. param -s, --save specifies which subdirectory
+  #       - listf:  backup a file located in 'saveDirPath'. param -s, --save specifies which file
+  #
+  #  - saveMap:         required for backup method 'map'
+  #  - savePattern:     optional, used by backup methods 'listd' and 'listf'. Regex pattern to filter files/directories.
 
   - shortName: factorio
     fullName: Factorio
     backupDirName: Factorio
+    saveDirPath: $AppData\Roaming\Factorio\saves
     backupMethod: listf
     savePattern: ^(?!_autosave).+\.zip$
-    saveDirPath: $AppData\Roaming\Factorio\saves
 
   - shortName: nms
     fullName: No Man's Sky
     backupDirName: NoMansSky
-    backupMethod: all
     saveDirPath: $AppData\Roaming\HelloGames\NMS\st_$steamID
+    backupMethod: all
 
   - shortName: forest
     fullName: The Forest
@@ -47,8 +64,8 @@ gameConfigs:
     fullName: Minecraft
     backupDirName: Minecraft
     saveDirPath: $AppData\Roaming\.minecraft\saves
-    #savePattern: ''
     backupMethod: listd
+    #savePattern: ''
 
   - shortName: mcs
     fullName: Minecraft Server

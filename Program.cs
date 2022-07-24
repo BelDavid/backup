@@ -247,7 +247,7 @@ switch (gameConfig.BackupMethod)
     case GameConfig.BackupMethods.all:
         if (paramSave.IsSet)
         {
-            PrettyPrint.WriteLine($"Parameter -{paramSave.LongName} isn't required to backup {gameConfig.fullName}.", ConsoleColor.Yellow);
+            PrettyPrint.WriteLine($"Parameter -{paramSave.Flag}, --{paramSave.LongName} isn't required to backup {gameConfig.fullName}.", ConsoleColor.Yellow);
             paramSave.Clear();
         }
         savePath = gameConfig.saveDirPath;
