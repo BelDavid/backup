@@ -18,51 +18,66 @@ namespace Backup
         Error,
     }
 
+    public enum OutputMode
+    {
+        Write,
+        WriteLine,
+    }
+
     public static class PrettyPrint
     {
-        public static bool supressInfoOutput = false;
-        private static void Writer<T>(T obj, OutputType outputType, Func<TextWriter, Action<T>> map, ConsoleColor? color = null)
+        public static bool SupressInfoOutput { get; set; } = false;
+
+        private static void Writer(string text, OutputType outputType, OutputMode outputMode, ConsoleColor? colorOverride = null)
         {
+            TextWriter tw = Console.Out;
+            ConsoleColor color = ConsoleColor.White;
+
             switch (outputType)
             {
                 case OutputType.Success:
-                    WriteUniversal(obj, color ?? ConsoleColor.Green, map(Console.Out));
+                    color = colorOverride ?? ConsoleColor.Green;
                     break;
                 case OutputType.Info:
-                    if (!supressInfoOutput)
-                    {
-                        WriteUniversal(obj, color ?? ConsoleColor.Blue, map(Console.Out));
-                    }
+                    if (SupressInfoOutput) { return; }
+                    color = colorOverride ?? ConsoleColor.Blue;
                     break;
                 case OutputType.Help:
-                    WriteUniversal(obj, color ?? ConsoleColor.Yellow, map(Console.Out));
+                    color = colorOverride ?? ConsoleColor.Yellow;
                     break;
                 case OutputType.Danger:
                 case OutputType.Warning:
-                    WriteUniversal(obj, color ?? ConsoleColor.DarkYellow, map(Console.Out));
+                    color = colorOverride ?? ConsoleColor.DarkYellow;
                     break;
                 case OutputType.Error:
-                    WriteUniversal(obj, color ?? ConsoleColor.Red, map(Console.Error));
+                    color = colorOverride ?? ConsoleColor.Red;
+                    tw = Console.Error;
                     break;
+                default:
+                    return;
             }
-        }
-        public static void WriteLine(string text, OutputType outputType, ConsoleColor? color = null)
-        {
-            Writer(text, outputType, w => w.WriteLine, color);
+
+            Action<string> WriteFunc = outputMode switch
+            {
+                OutputMode.Write => tw.Write,
+                OutputMode.WriteLine => tw.WriteLine,
+                _ => tw.WriteLine,
+            };
+
+            var oldColor = Console.ForegroundColor;
+            Console.ForegroundColor = color;
+
+            WriteFunc(text ?? string.Empty);
+
+            Console.ForegroundColor = oldColor;
         }
         public static void Write(string text, OutputType outputType, ConsoleColor? color = null)
         {
-            Writer(text, outputType, w => w.Write, color);
+            Writer(text, outputType, OutputMode.Write, color);
         }
-
-        public static void WriteUniversal<T>(T obj, ConsoleColor color, Action<T> writer)
+        public static void WriteLine(string text, OutputType outputType, ConsoleColor? color = null)
         {
-            var currentColor = Console.ForegroundColor;
-            Console.ForegroundColor = color;
-
-            writer(obj);
-
-            Console.ForegroundColor = currentColor;
+            Writer(text, outputType, OutputMode.WriteLine, color);
         }
 
         public static void WriteLine()

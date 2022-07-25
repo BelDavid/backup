@@ -41,7 +41,7 @@ if (paramsState != ParamsState.Correct)
 
 if (paramQuiet.IsSet)
 {
-    PrettyPrint.supressInfoOutput = true;
+    PrettyPrint.SupressInfoOutput = true;
 }
 #endregion
 
