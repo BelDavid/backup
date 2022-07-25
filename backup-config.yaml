@@ -95,7 +95,7 @@ gameConfigs:
       Launcher\savegames\$ubisoftID\4
     backupMethod: all
 
-  - shortName: oc-all
+  - shortName: oca
     fullName: Overcooked All you can eat
     backupDirName: Overcooked
     saveDirPath: $AppData\LocalLow\Team17\Overcooked All You Can Eat\$steamID
