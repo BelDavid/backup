@@ -8,9 +8,16 @@
       "commandName": "Project",
       "commandLineArgs": "-h"
     },
-    "Backup nms --dry": {
+    "Backup nms -oOq": {
       "commandName": "Project",
-      "commandLineArgs": "nms --dry"
+      "commandLineArgs": "nms -oOq"
+    },
+    "Backup": {
+      "commandName": "Project"
+    },
+    "Backup nms --dry -ck2": {
+      "commandName": "Project",
+      "commandLineArgs": "nms --dry -ck2"
     }
   }
 }

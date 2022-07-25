@@ -11,7 +11,7 @@ namespace Backup
 #pragma warning disable 0649
 #pragma warning disable 8602
 #pragma warning disable 8604
-    internal class Config
+    public class Config
     {
         // -- DATA --
         public Dictionary<string, string>? variables;
@@ -42,7 +42,7 @@ namespace Backup
 
             if (variables == null)
             {
-                PrettyPrint.ErrorWriteLine($"[Config] Invalid value in '{nameof(variables)}', or missing definition. Dictionary {{}} expected!", ConsoleColor.Red);
+                PrettyPrint.WriteLine($"[Config] Invalid value in '{nameof(variables)}', or missing definition. Dictionary {{}} expected!", OutputType.Error);
                 valid = false;
             }
             else
@@ -55,7 +55,7 @@ namespace Backup
                     var varNameLower = "$" + varName.ToLower();
                     if (variableMap.ContainsKey(varNameLower))
                     {
-                        PrettyPrint.ErrorWriteLine($"Variable '{varName}' already defined!", ConsoleColor.Red);
+                        PrettyPrint.WriteLine($"Variable '{varName}' already defined!", OutputType.Error);
                         valid = false;
                         break;
                     }
@@ -68,14 +68,14 @@ namespace Backup
 
             if (backupsDirPath == null)
             {
-                PrettyPrint.ErrorWriteLine($"[Config] Invalid value in '{nameof(backupsDirPath)}', or missing definition. String \"\" expected!", ConsoleColor.Red);
+                PrettyPrint.WriteLine($"[Config] Invalid value in '{nameof(backupsDirPath)}', or missing definition. String \"\" expected!", OutputType.Error);
                 valid = false;
             }
             backupsDirPath = backupsDirPath?.SubstituteVariables(this);
 
             if (gameConfigs == null)
             {
-                PrettyPrint.ErrorWriteLine($"[Config] Invalid value in '{nameof(gameConfigs)}', or missing definition. List [] expected!", ConsoleColor.Red);
+                PrettyPrint.WriteLine($"[Config] Invalid value in '{nameof(gameConfigs)}', or missing definition. List [] expected!", OutputType.Error);
                 valid = false;
             }
             else
@@ -86,12 +86,12 @@ namespace Backup
                     var gameConfig = gameConfigs[i];
                     if (gameConfig == null)
                     {
-                        PrettyPrint.ErrorWriteLine($"[Config] Invalid value in '{nameof(gameConfigs)}[{i}]', or missing definition. Dictionary {{}} expected!", ConsoleColor.Red);
+                        PrettyPrint.WriteLine($"[Config] Invalid value in '{nameof(gameConfigs)}[{i}]', or missing definition. Dictionary {{}} expected!", OutputType.Error);
                         valid = false;
                     }
                     else if (string.IsNullOrWhiteSpace(gameConfig.shortName))
                     {
-                        PrettyPrint.ErrorWriteLine($"[Config] Invalid value in '{nameof(gameConfigs)}[{i}].{nameof(GameConfig.shortName)}', or missing definition. String \"\" expected!", ConsoleColor.Red);
+                        PrettyPrint.WriteLine($"[Config] Invalid value in '{nameof(gameConfigs)}[{i}].{nameof(GameConfig.shortName)}', or missing definition. String \"\" expected!", OutputType.Error);
                         valid = false;
                     }
                     else
@@ -102,7 +102,7 @@ namespace Backup
                     // Add to the gameConfigMap
                     if (gameConfigMap.ContainsKey(gameConfig.shortName))
                     {
-                        PrettyPrint.ErrorWriteLine($"[Config] Duplicite value '{gameConfig.shortName}' in '{nameof(gameConfigs)}[{i}].{nameof(GameConfig.shortName)}'. Config with this shorName has already been defined.", ConsoleColor.Red);
+                        PrettyPrint.WriteLine($"[Config] Duplicite value '{gameConfig.shortName}' in '{nameof(gameConfigs)}[{i}].{nameof(GameConfig.shortName)}'. Config with this shorName has already been defined.", OutputType.Error);
                         valid = false;
                     }
                     else
@@ -120,7 +120,7 @@ namespace Backup
     }
 
 
-    internal class GameConfig
+    public class GameConfig
     {
         // -- DATA --
         public string? shortName;
@@ -144,29 +144,29 @@ namespace Backup
             // shortName is validated in GameConfig.Validate() method.
             if (fullName == null)
             {
-                PrettyPrint.ErrorWriteLine($"[Config] Invalid value in '{nameof(Config.gameConfigs)}[{nameof(shortName)}: {shortName}].{nameof(fullName)}', or missing definition. String \"\" expected.", ConsoleColor.Red);
+                PrettyPrint.WriteLine($"[Config] Invalid value in '{nameof(Config.gameConfigs)}[{nameof(shortName)}: {shortName}].{nameof(fullName)}', or missing definition. String \"\" expected.", OutputType.Error);
                 valid = false;
             }
             if (backupDirName == null)
             {
-                PrettyPrint.ErrorWriteLine($"[Config] Invalid value in '{nameof(Config.gameConfigs)}[{nameof(shortName)}: {shortName}].{nameof(backupDirName)}', or missing definition. String \"\" expected.", ConsoleColor.Red);
+                PrettyPrint.WriteLine($"[Config] Invalid value in '{nameof(Config.gameConfigs)}[{nameof(shortName)}: {shortName}].{nameof(backupDirName)}', or missing definition. String \"\" expected.", OutputType.Error);
                 valid = false;
             }
 
             if (backupMethod == null)
             {
-                PrettyPrint.ErrorWriteLine($"[Config] Invalid value in '{nameof(Config.gameConfigs)}[{nameof(shortName)}: {shortName}].{nameof(backupMethod)}', or missing definition. String \"\" expected.", ConsoleColor.Red);
+                PrettyPrint.WriteLine($"[Config] Invalid value in '{nameof(Config.gameConfigs)}[{nameof(shortName)}: {shortName}].{nameof(backupMethod)}', or missing definition. String \"\" expected.", OutputType.Error);
                 valid = false;
             }
             else if (!Enum.TryParse(backupMethod, true, out __backupMethod))
             {
-                PrettyPrint.ErrorWriteLine($"[Config] Invalid value in '{nameof(Config.gameConfigs)}[{nameof(shortName)}: {shortName}].{nameof(backupMethod)}'. Allowed values: {string.Join(", ", Enum.GetNames<BackupMethods>())}", ConsoleColor.Red);
+                PrettyPrint.WriteLine($"[Config] Invalid value in '{nameof(Config.gameConfigs)}[{nameof(shortName)}: {shortName}].{nameof(backupMethod)}'. Allowed values: {string.Join(", ", Enum.GetNames<BackupMethods>())}", OutputType.Error);
                 valid = false;
             }
 
             if (saveDirPath == null)
             {
-                PrettyPrint.ErrorWriteLine($"[Config] Invalid value in '{nameof(Config.gameConfigs)}[{nameof(shortName)}: {shortName}].{nameof(saveDirPath)}', or missing definition. String \"\" expected.", ConsoleColor.Red);
+                PrettyPrint.WriteLine($"[Config] Invalid value in '{nameof(Config.gameConfigs)}[{nameof(shortName)}: {shortName}].{nameof(saveDirPath)}', or missing definition. String \"\" expected.", OutputType.Error);
                 valid = false;
             }
             saveDirPath = saveDirPath?.SubstituteVariables(config);
@@ -177,7 +177,7 @@ namespace Backup
                 case BackupMethods.map:
                     if (saveMap == null)
                     {
-                        PrettyPrint.ErrorWriteLine($"[Config] Invalid value in '{nameof(Config.gameConfigs)}[{nameof(shortName)}: {shortName}].{nameof(saveMap)}', or missing definition. Dictionary {{}} expected.", ConsoleColor.Red);
+                        PrettyPrint.WriteLine($"[Config] Invalid value in '{nameof(Config.gameConfigs)}[{nameof(shortName)}: {shortName}].{nameof(saveMap)}', or missing definition. Dictionary {{}} expected.", OutputType.Error);
                         valid = false;
                     }
                     else
@@ -186,12 +186,12 @@ namespace Backup
                         {
                             if (string.IsNullOrWhiteSpace(key))
                             {
-                                PrettyPrint.ErrorWriteLine($"[Config] Invalid key name in '{nameof(Config.gameConfigs)}[{nameof(shortName)}: {shortName}].{nameof(saveMap)}'. Can not be empty, or white space.", ConsoleColor.Red);
+                                PrettyPrint.WriteLine($"[Config] Invalid key name in '{nameof(Config.gameConfigs)}[{nameof(shortName)}: {shortName}].{nameof(saveMap)}'. Can not be empty, or white space.", OutputType.Error);
                                 valid = false;
                             }
                             else if (string.IsNullOrWhiteSpace(val))
                             {
-                                PrettyPrint.ErrorWriteLine($"[Config] Invalid value in '{nameof(Config.gameConfigs)}[{nameof(shortName)}: {shortName}].{nameof(saveMap)}[{key}]'. Can not be null, empty, or white space.", ConsoleColor.Red);
+                                PrettyPrint.WriteLine($"[Config] Invalid value in '{nameof(Config.gameConfigs)}[{nameof(shortName)}: {shortName}].{nameof(saveMap)}[{key}]'. Can not be null, empty, or white space.", OutputType.Error);
                                 valid = false;
                             }
                             else
@@ -213,7 +213,7 @@ namespace Backup
             return valid;
         }
 
-        internal enum BackupMethods
+        public enum BackupMethods
         {
             all,
             map,

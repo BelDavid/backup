@@ -7,7 +7,7 @@ using System.IO.Compression;
 using System.Runtime.InteropServices;
 
 
-#region === Set Parameters ===
+#region === Parameters ===
 var paramGame = new Parameter<string>('g', "game", "A shortName of the game to backup up. Must be defined in the config file. Pass value 'list' to list all supported games.", mandatory: true);
 var paramSave = new Parameter<string>('s', "save", "Specify a specificic save withing the given game.");
 var paramNote = new Parameter<string>('n', "note", "Append a short note to the backup file name.");
@@ -17,22 +17,31 @@ var paramClear = new SwitchParameter('c', "clear", "Clear old temporary saves, b
 var paramKeepCount = new Parameter<int>('k', "keepCount", $"Overrides the default count for --{paramClear.LongName} parameter. Valid range [2, 99 999].", defaultValue: 10, constrain: i => i >= 2 && i <= 99_999);
 
 var paramOpen = new SwitchParameter('o', "open", "Open backup folder.");
-var paramDryRun = new SwitchParameter('d', "dry", "Run the script without actually doing anything");
-var paramForce = new SwitchParameter('f', "force", "Ignores whether files changed. Create backup anyway");
 
-var paramConfig = new Parameter<string>('C', "config", "Custom path to the config file", defaultValue: "backup-config.yaml");
+var paramDryRun = new SwitchParameter('d', "dry", "Run the script without actually doing anything.");
+var paramForce = new SwitchParameter('f', "force", "Ignores whether files changed. Create backup anyway.");
+var paramOmit = new SwitchParameter('O', "omit", "Omit backup process, but do everything else.");
+var paramQuiet = new SwitchParameter('q', "quiet", "Supress Info messages");
 
-var parameters = new Parameters(paramGame, paramSave, paramNote, paramPermanent, paramClear, paramKeepCount, paramOpen, paramForce, paramDryRun, paramConfig);
+var paramConfig = new Parameter<string>('C', "config", "Custom path to the config file.", defaultValue: "backup-config.yaml");
+
+
+var parameters = new Parameters(paramGame, paramSave, paramNote, paramPermanent, paramClear, paramKeepCount, paramOpen, paramForce, paramDryRun, paramOmit, paramQuiet, paramConfig);
 var paramsState = parameters.Evaluate(args);
 
 if (paramsState != ParamsState.Correct)
 {
     if (paramsState == ParamsState.InvalidError)
     {
-        PrettyPrint.ErrorWriteLine("Passed arguments are not valid.", ConsoleColor.Red);
+        PrettyPrint.WriteLine("Passed arguments are not valid.", OutputType.Error);
     }
     Environment.ExitCode = 1;
     return;
+}
+
+if (paramQuiet.IsSet)
+{
+    PrettyPrint.supressInfoOutput = true;
 }
 #endregion
 
@@ -49,7 +58,7 @@ if (!Path.IsPathRooted(configFileName))
         configFilePath = Path.Combine(exeLocation, configFileName);
         if (!File.Exists(configFilePath))
         {
-            PrettyPrint.ErrorWriteLine($"Unable to locate the config file '{configFileName}'!", ConsoleColor.Red);
+            PrettyPrint.WriteLine($"Unable to locate the config file '{configFileName}'!", OutputType.Error);
             Environment.ExitCode = 1;
             return;
         }
@@ -60,7 +69,7 @@ else
     configFilePath = configFileName;
     if (!File.Exists(configFilePath))
     {
-        PrettyPrint.ErrorWriteLine($"Unable to locate the config file at '{configFileName}'!", ConsoleColor.Red);
+        PrettyPrint.WriteLine($"Unable to locate the config file at '{configFileName}'!", OutputType.Error);
         Environment.ExitCode = 1;
         return;
     }
@@ -73,8 +82,8 @@ try
 }
 catch (Exception ex)
 {
-    PrettyPrint.ErrorWriteLine($"{ex.Message}", ConsoleColor.Red);
-    PrettyPrint.ErrorWriteLine($"Failed to load config data from '{configFileName}'.", ConsoleColor.Red);
+    PrettyPrint.WriteLine($"{ex.Message}", OutputType.Error);
+    PrettyPrint.WriteLine($"Failed to load config data from '{configFileName}'.", OutputType.Error);
     Environment.ExitCode = 1;
     return;
 }
@@ -90,8 +99,8 @@ if (fileInfo.Extension == ".json")
     }
     catch (Exception ex)
     {
-        PrettyPrint.ErrorWriteLine(ex.Message, ConsoleColor.Red);
-        PrettyPrint.ErrorWriteLine("Failed to Parse JSON config file.", ConsoleColor.Red);
+        PrettyPrint.WriteLine(ex.Message, OutputType.Error);
+        PrettyPrint.WriteLine("Failed to Parse JSON config file.", OutputType.Error);
         Environment.ExitCode = 1;
         return;
     }
@@ -107,27 +116,29 @@ else if (fileInfo.Extension == ".yaml" || fileInfo.Extension == ".yml")
     }
     catch (Exception ex)
     {
-        PrettyPrint.ErrorWriteLine(ex.Message, ConsoleColor.Red);
-        PrettyPrint.ErrorWriteLine("Failed to Parse YAML config file.", ConsoleColor.Red);
+        PrettyPrint.WriteLine(ex.Message, OutputType.Error);
+        PrettyPrint.WriteLine("Failed to Parse YAML config file.", OutputType.Error);
         Environment.ExitCode = 1;
         return;
     }
 }
 else
 {
-    PrettyPrint.ErrorWriteLine("Unsupported Config type. Use JSON, or YAML/YML. (Extension must match the type.)", ConsoleColor.Red);
+    PrettyPrint.WriteLine("Unsupported Config type. Use JSON, or YAML/YML. (Extension must match the type.)", OutputType.Error);
+    Environment.ExitCode = 1;
+    return;
 }
 
 if (config is null)
 {
-    PrettyPrint.ErrorWriteLine("No data loaded from the config file!", ConsoleColor.Red);
+    PrettyPrint.WriteLine("No data loaded from the config file!", OutputType.Error);
     Environment.ExitCode = 1;
     return;
 }
 
 if (!config.ValidateAndBuild())
 {
-    PrettyPrint.ErrorWriteLine("Failed to Validate the config data.", ConsoleColor.Red);
+    PrettyPrint.WriteLine("Failed to Validate the config data.", OutputType.Error);
     Environment.ExitCode = 1;
     return;
 }
@@ -137,34 +148,34 @@ if (!config.ValidateAndBuild())
 // List all supported games and exit
 if (paramGame.Value == "list")
 {
-    PrettyPrint.WriteLine("Supported games:", ConsoleColor.Yellow);
+    PrettyPrint.WriteLine("Supported games:", OutputType.Help);
     foreach (var gc in config.gameConfigs)
     {
-        PrettyPrint.WriteLine($" {gc.shortName}: {gc.fullName}", ConsoleColor.Yellow);
+        PrettyPrint.WriteLine($" {gc.shortName}: {gc.fullName}", OutputType.Help);
         switch (gc.BackupMethod)
         {
             case GameConfig.BackupMethods.map:
-                PrettyPrint.WriteLine($"   saves: [{string.Join(", ", gc.saveMap.Keys)}]", ConsoleColor.DarkYellow);
+                PrettyPrint.WriteLine($"   saves: [{string.Join(", ", gc.saveMap.Keys)}]", OutputType.Help, ConsoleColor.DarkYellow);
                 break;
             case GameConfig.BackupMethods.listd:
                 try
                 {
-                    PrettyPrint.WriteLine($"   saves: [{string.Join(", ", Saves.GetFolderSaves(gc.savePattern, gc.saveDirPath).Select(s => s.Name))}]", ConsoleColor.DarkYellow);
+                    PrettyPrint.WriteLine($"   saves: [{string.Join(", ", Saves.GetFolderSaves(gc.savePattern, gc.saveDirPath).Select(s => s.Name))}]", OutputType.Help, ConsoleColor.DarkYellow);
                 }
                 catch (Exception ex)
                 {
-                    PrettyPrint.WriteLine($"   saves: Failed to load potential saves. {ex.Message}", ConsoleColor.Red);
+                    PrettyPrint.WriteLine($"   saves: Failed to load potential saves. {ex.Message}", OutputType.Error);
                     continue;
                 }
                 break;
             case GameConfig.BackupMethods.listf:
                 try
                 {
-                    PrettyPrint.WriteLine($"   saves: [{string.Join(", ", Saves.GetFileSaves(gc.savePattern, gc.saveDirPath).Select(s => s.Name))}]", ConsoleColor.DarkYellow);
+                    PrettyPrint.WriteLine($"   saves: [{string.Join(", ", Saves.GetFileSaves(gc.savePattern, gc.saveDirPath).Select(s => s.Name))}]", OutputType.Help, ConsoleColor.DarkYellow);
                 }
                 catch (Exception ex)
                 {
-                    PrettyPrint.WriteLine($"   saves: Failed to load potential saves. {ex.Message}", ConsoleColor.Red);
+                    PrettyPrint.WriteLine($"   saves: Failed to load potential saves. {ex.Message}", OutputType.Error);
                     continue;
                 }
                 break;
@@ -177,7 +188,7 @@ if (paramGame.Value == "list")
 // Check if a game by given shortName is supported.
 if (!config.ContainsGame(paramGame.Value))
 {
-    PrettyPrint.ErrorWriteLine($"Can not backup '{paramGame.Value}'. No such game is configured.", ConsoleColor.Red);
+    PrettyPrint.WriteLine($"Can not backup '{paramGame.Value}'. No such game is configured.", OutputType.Error);
     Environment.ExitCode = 1;
     return;
 }
@@ -191,15 +202,15 @@ bool databseChanged = false;
 
 if (!File.Exists(dbFilePath))
 {
-    PrettyPrint.ErrorWriteLine($"Failed to find file '{dbFileName}'. Creating new one.", ConsoleColor.DarkYellow);
+    PrettyPrint.WriteLine($"Failed to find file '{dbFileName}'. Creating new one.", OutputType.Warning);
     try
     {
         File.WriteAllText(dbFilePath, "{}");
     }
     catch (Exception ex)
     {
-        PrettyPrint.ErrorWriteLine($"{ex.Message}", ConsoleColor.Red);
-        PrettyPrint.ErrorWriteLine($"Failed to create '{dbFileName}'.", ConsoleColor.Red);
+        PrettyPrint.WriteLine($"{ex.Message}", OutputType.Error);
+        PrettyPrint.WriteLine($"Failed to create '{dbFileName}'.", OutputType.Error);
         Environment.ExitCode = 1;
         return;
     }
@@ -212,8 +223,8 @@ try
 }
 catch (Exception ex)
 {
-    PrettyPrint.ErrorWriteLine($"{ex.Message}", ConsoleColor.Red);
-    PrettyPrint.ErrorWriteLine($"Failed to load data from '{dbFileName}'.", ConsoleColor.Red);
+    PrettyPrint.WriteLine($"{ex.Message}", OutputType.Error);
+    PrettyPrint.WriteLine($"Failed to load data from '{dbFileName}'.", OutputType.Error);
     Environment.ExitCode = 1;
     return;
 }
@@ -223,7 +234,7 @@ catch (Exception ex)
 #region --- Preprocess ---
 if (paramDryRun.IsSet)
 {
-    PrettyPrint.WriteLine("[Dry Run] No actual changes will be made!", ConsoleColor.Blue);
+    PrettyPrint.WriteLine("[Dry Run] No actual changes will be made!", OutputType.Info);
 }
 var gameConfig = config[paramGame.Value];
 if (paramSave.IsSet)
@@ -247,7 +258,7 @@ switch (gameConfig.BackupMethod)
     case GameConfig.BackupMethods.all:
         if (paramSave.IsSet)
         {
-            PrettyPrint.WriteLine($"Parameter -{paramSave.Flag}, --{paramSave.LongName} isn't required to backup {gameConfig.fullName}.", ConsoleColor.Yellow);
+            PrettyPrint.WriteLine($"Parameter -{paramSave.Flag}, --{paramSave.LongName} isn't required to backup {gameConfig.fullName}.", OutputType.Help);
             paramSave.Clear();
         }
         savePath = gameConfig.saveDirPath;
@@ -256,8 +267,8 @@ switch (gameConfig.BackupMethod)
     case GameConfig.BackupMethods.map:
         if (!paramSave.IsSet || !gameConfig.saveMap.ContainsKey(paramSave.Value))
         {
-            PrettyPrint.ErrorWriteLine($"Value of parameter --{paramSave.LongName} is expected to be one of the defined keys in '{nameof(Config.gameConfigs)}[{nameof(gameConfig.shortName)}: {gameConfig.shortName}].{nameof(gameConfig.saveMap)}':", ConsoleColor.Red);
-            PrettyPrint.ErrorWriteLine($"Available keys: [{string.Join(", ", gameConfig.saveMap.Select(kv => kv.Key))}]", ConsoleColor.Red);
+            PrettyPrint.WriteLine($"Value of parameter --{paramSave.LongName} is expected to be one of the defined keys in '{nameof(Config.gameConfigs)}[{nameof(gameConfig.shortName)}: {gameConfig.shortName}].{nameof(gameConfig.saveMap)}':", OutputType.Error);
+            PrettyPrint.WriteLine($"Available keys: [{string.Join(", ", gameConfig.saveMap.Select(kv => kv.Key))}]", OutputType.Error);
             Environment.ExitCode = 1;
             return;
         }
@@ -270,8 +281,8 @@ switch (gameConfig.BackupMethod)
 
         if (!paramSave.IsSet)
         {
-            PrettyPrint.ErrorWriteLine($"You need to set the --{paramSave.LongName} parameter to a name of the save folder you want to back up.", ConsoleColor.Red);
-            PrettyPrint.ErrorWriteLine($"Available saves: [{string.Join(", ", savesd.Select(s => s.Name))}]", ConsoleColor.Red);
+            PrettyPrint.WriteLine($"You need to set the --{paramSave.LongName} parameter to a name of the save folder you want to back up.", OutputType.Error);
+            PrettyPrint.WriteLine($"Available saves: [{string.Join(", ", savesd.Select(s => s.Name))}]", OutputType.Error);
             Environment.ExitCode = 1;
             return;
         }
@@ -285,8 +296,8 @@ switch (gameConfig.BackupMethod)
         }
         if (dirInfoToBackup == null)
         {
-            PrettyPrint.ErrorWriteLine($"No save folder with the name '{paramSave.Value}' found.", ConsoleColor.Red);
-            PrettyPrint.ErrorWriteLine($"Available saves: [{string.Join(", ", savesd.Select(s => s.Name))}]", ConsoleColor.Red);
+            PrettyPrint.WriteLine($"No save folder with the name '{paramSave.Value}' found.", OutputType.Error);
+            PrettyPrint.WriteLine($"Available saves: [{string.Join(", ", savesd.Select(s => s.Name))}]", OutputType.Error);
             Environment.ExitCode = 1;
             return;
         }
@@ -300,8 +311,8 @@ switch (gameConfig.BackupMethod)
         
         if (!paramSave.IsSet)
         {
-            PrettyPrint.ErrorWriteLine($"You need to set the --{paramSave.LongName} parameter to a name of the save file you want to back up.", ConsoleColor.Red);
-            PrettyPrint.ErrorWriteLine($"Available saves: [{string.Join(", ", savesf.Select(s => s.Name))}]", ConsoleColor.Red);
+            PrettyPrint.WriteLine($"You need to set the --{paramSave.LongName} parameter to a name of the save file you want to back up.", OutputType.Error);
+            PrettyPrint.WriteLine($"Available saves: [{string.Join(", ", savesf.Select(s => s.Name))}]", OutputType.Error);
             Environment.ExitCode = 1;
             return;
         }
@@ -315,8 +326,8 @@ switch (gameConfig.BackupMethod)
         }
         if (fileInfoToBackup == null)
         {
-            PrettyPrint.ErrorWriteLine($"No save file with the name '{paramSave.Value}' found.", ConsoleColor.Red);
-            PrettyPrint.ErrorWriteLine($"Available saves: [{string.Join(", ", savesf.Select(s => s.Name))}]", ConsoleColor.Red);
+            PrettyPrint.WriteLine($"No save file with the name '{paramSave.Value}' found.", OutputType.Error);
+            PrettyPrint.WriteLine($"Available saves: [{string.Join(", ", savesf.Select(s => s.Name))}]", OutputType.Error);
             Environment.ExitCode = 1;
             return;
         }
@@ -324,7 +335,7 @@ switch (gameConfig.BackupMethod)
         break;
 
     default:
-        PrettyPrint.ErrorWriteLine("Unexpected Backup method. Aborting", ConsoleColor.Red);
+        PrettyPrint.WriteLine("Unexpected Backup method. Aborting", OutputType.Error);
         Environment.ExitCode = 1;
         return;
 }
@@ -343,22 +354,22 @@ else if (File.Exists(savePath))
 }
 else
 {
-    PrettyPrint.ErrorWriteLine($"Save '{savePath}' does not exist. Nothing to back up.", ConsoleColor.Red);
+    PrettyPrint.WriteLine($"Save '{savePath}' does not exist. Nothing to back up.", OutputType.Error);
     Environment.ExitCode = 1;
     return;
 }
 
 if (!Directory.Exists(backupDir))
 {
-    PrettyPrint.WriteLine($"Directory '{backupDir}' does not exist. Creating.", ConsoleColor.Blue);
+    PrettyPrint.WriteLine($"Directory '{backupDir}' does not exist. Creating.", OutputType.Info);
     try
     {
         Directory.CreateDirectory(backupDir);
-        PrettyPrint.WriteLine($" - Directory '{backupDir}' successfully created.", ConsoleColor.Green);
+        PrettyPrint.WriteLine($" - Directory '{backupDir}' successfully created.", OutputType.Success);
     }
     catch (Exception)
     {
-        PrettyPrint.ErrorWriteLine($" - Failed to create directory '{backupDir}'.", ConsoleColor.Red);
+        PrettyPrint.WriteLine($" - Failed to create directory '{backupDir}'.", OutputType.Error);
         Environment.ExitCode = 1;
         return;
     }
@@ -386,7 +397,7 @@ switch (saveType)
         latestWriteTime = saveFileInfo.LastWriteTime;
         break;
     default:
-        PrettyPrint.ErrorWriteLine("Unexpected save type.", ConsoleColor.Red);
+        PrettyPrint.WriteLine("Unexpected save type.", OutputType.Error);
         Environment.ExitCode = 1;
         return;
 }
@@ -411,41 +422,48 @@ else
 #endregion
 
 #region --- Backup ---
-if (paramPermanent.IsSet || !newestBackupAlreadyExists || paramForce.IsSet)
+if (!paramOmit.IsSet)
 {
-    PrettyPrint.WriteLine($"Backing up '{gameConfig.fullName}{(paramSave.IsSet ? ": " + paramSave.Value : "")}' ...", ConsoleColor.Blue);
-    try
+    if (paramPermanent.IsSet || !newestBackupAlreadyExists || paramForce.IsSet)
     {
-        if (!paramDryRun.IsSet)
+        PrettyPrint.WriteLine($"Backing up '{gameConfig.fullName}{(paramSave.IsSet ? ": " + paramSave.Value : "")}' ...", OutputType.Info);
+        try
         {
-            switch (saveType)
+            if (!paramDryRun.IsSet)
             {
-                case SaveType.Directory: 
-                    ZipFile.CreateFromDirectory(savePath, Path.Combine(backupDir, backupFileName), CompressionLevel.SmallestSize, true);
-                    break;
-                case SaveType.File:
-                    using (var fs = new FileStream(Path.Combine(backupDir, backupFileName), FileMode.Create))
-                    {
-                        using (var arch = new ZipArchive(fs, ZipArchiveMode.Create))
+                switch (saveType)
+                {
+                    case SaveType.Directory: 
+                        ZipFile.CreateFromDirectory(savePath, Path.Combine(backupDir, backupFileName), CompressionLevel.SmallestSize, true);
+                        break;
+                    case SaveType.File:
+                        using (var fs = new FileStream(Path.Combine(backupDir, backupFileName), FileMode.Create))
                         {
-                            arch.CreateEntryFromFile(savePath, saveFileInfo.Name);
+                            using (var arch = new ZipArchive(fs, ZipArchiveMode.Create))
+                            {
+                                arch.CreateEntryFromFile(savePath, saveFileInfo.Name);
+                            }
                         }
-                    }
-                    break;
+                        break;
+                }
             }
+            PrettyPrint.WriteLine($"Backup '{backupFileName}' created.", OutputType.Success);
         }
-        PrettyPrint.WriteLine($"Backup '{backupFileName}' created.", ConsoleColor.Green);
+        catch (Exception ex)
+        {
+            PrettyPrint.WriteLine($"Backup failed: {ex.Message}", OutputType.Error);
+            Environment.ExitCode = 2;
+            return;
+        }
     }
-    catch (Exception ex)
+    else
     {
-        PrettyPrint.ErrorWriteLine($"Backup failed: {ex.Message}", ConsoleColor.Red);
-        Environment.ExitCode = 2;
-        return;
+        PrettyPrint.WriteLine("Save files did not change since last backup. New backup not created.", OutputType.Info);
     }
 }
 else
 {
-    PrettyPrint.WriteLine("Save files did not change since last backup. New backup not created.", ConsoleColor.Blue);
+    PrettyPrint.WriteLine("Omiting Backup", OutputType.Info);
 }
 #endregion
 
@@ -462,7 +480,7 @@ if (databseChanged)
     }
     catch (Exception ex)
     {
-        PrettyPrint.ErrorWriteLine($"Failed to update database: {ex.Message}", ConsoleColor.Red);
+        PrettyPrint.WriteLine($"Failed to update database: {ex.Message}", OutputType.Error);
     }
 }
 #endregion
@@ -480,7 +498,7 @@ if (paramClear.IsSet)
 
     foreach (var file in tempFilesToDelete)
     {
-        PrettyPrint.Write($" - Deleting '{file.Name}'.", ConsoleColor.DarkYellow);
+        PrettyPrint.Write($" - Deleting '{file.Name}'.", OutputType.Danger);
 
         try
         {
@@ -489,15 +507,15 @@ if (paramClear.IsSet)
                 File.Delete(file.FullName);
             }
             freedMemory += file.Length;
-            PrettyPrint.WriteLine(" Success.", ConsoleColor.DarkYellow);
+            PrettyPrint.WriteLine(" Success.", OutputType.Danger, ConsoleColor.Green);
         }
         catch (Exception ex)
         {
-            PrettyPrint.ErrorWriteLine($" Failed to delete file: {ex.Message}", ConsoleColor.Red);
+            PrettyPrint.WriteLine($" Failed to delete file: {ex.Message}", OutputType.Error);
             continue;
         }
     }
-    PrettyPrint.WriteLine($"Total {PrettyPrint.Bytes(freedMemory)} of memory cleared.", ConsoleColor.DarkYellow);
+    PrettyPrint.WriteLine($"Total {PrettyPrint.Bytes(freedMemory)} of memory cleared.", OutputType.Danger);
 }
 #endregion
 
@@ -515,11 +533,11 @@ if (paramOpen.IsSet)
             Process.Start("xdg-open", backupDir);
 #endif
         }
-        PrettyPrint.WriteLine($"Backup folder opened.", ConsoleColor.Blue);
+        PrettyPrint.WriteLine($"Backup folder opened.", OutputType.Info);
     }
     catch (Exception ex)
     {
-        PrettyPrint.ErrorWriteLine($"Failed to open backup folder: {ex.Message}", ConsoleColor.Red);
+        PrettyPrint.WriteLine($"Failed to open backup folder: {ex.Message}", OutputType.Error);
     }
 #else
     PrettyPrint.WriteLine($"Openig Backup folder is curently not supported on this OS.", ConsoleColor.DarkYellow);

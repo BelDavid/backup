@@ -66,20 +66,20 @@ namespace Backup
                 if (arg.ToLower() == "--"+paramHelp.LongNameLowered || arg == "-"+paramHelp.Flag)
                 {
                     paramHelp.SetValue(true);
-                    PrettyPrint.WriteLine("Parameters: ", ConsoleColor.Yellow);
+                    PrettyPrint.WriteLine("Parameters: ", OutputType.Help);
                     foreach (var param in parameters.Append(paramHelp))
                     {
-                        PrettyPrint.Write($" -{param.Flag}, --{param.LongName}", ConsoleColor.Yellow);
+                        PrettyPrint.Write($" -{param.Flag}, --{param.LongName}", OutputType.Help);
                         if (param.HasDefaultValue)
                         {
-                            PrettyPrint.Write(" = " + param.GetValueAsObject(), ConsoleColor.DarkYellow);
+                            PrettyPrint.Write(" = " + param.GetValueAsObject(), OutputType.Help, ConsoleColor.DarkYellow);
                         }
                         if (param.Mandatory)
                         {
-                            PrettyPrint.Write(" | Required", ConsoleColor.DarkYellow);
+                            PrettyPrint.Write(" | Required", OutputType.Help, ConsoleColor.DarkYellow);
                         }
                         PrettyPrint.WriteLine();
-                        PrettyPrint.WriteLine($"   # {param.Description}", ConsoleColor.Gray);
+                        PrettyPrint.WriteLine($"   # {param.Description}", OutputType.Help, ConsoleColor.Gray);
                     }
 
                     return ParamsState.InvalidClean;
@@ -90,7 +90,7 @@ namespace Backup
             {
                 foreach (var param in parameters.Append(paramHelp))
                 {
-                    PrettyPrint.WriteLine($"--{param.LongName}{(param is SwitchParameter ? "": "=")}", ConsoleColor.Yellow);
+                    PrettyPrint.WriteLine($"--{param.LongName}{(param is SwitchParameter ? "": "=")}", OutputType.Help, ConsoleColor.White);
                 }
                 return ParamsState.InvalidClean;
             }
@@ -118,7 +118,7 @@ namespace Backup
                         argValue = matchLongNameValue.Groups[2].Value;
                         if (!parameterMap.ContainsKey(paramName))
                         {
-                            PrettyPrint.ErrorWriteLine($"[Params] No parameter named '{paramName}' found!", ConsoleColor.Red);
+                            PrettyPrint.WriteLine($"[Params] No parameter named '{paramName}' found!", OutputType.Error);
                             valid = false;
                             continue;
                         }
@@ -127,13 +127,13 @@ namespace Backup
 
                         if (paramToSet is SwitchParameter switchParameter)
                         {
-                            PrettyPrint.ErrorWriteLine("[Params] Can not set value of a SwitchParameter explicitly!", ConsoleColor.Red);
+                            PrettyPrint.WriteLine("[Params] Can not set value of a SwitchParameter!", OutputType.Error);
                             valid = false;
                             continue;
                         }
                         if (paramToSet.IsSet)
                         {
-                            PrettyPrint.ErrorWriteLine($"[Params] Parameter '{paramName}' is already set!", ConsoleColor.Red);
+                            PrettyPrint.WriteLine($"[Params] Parameter '{paramName}' is already set!", OutputType.Error);
                             valid = false;
                             continue;
                         }
@@ -144,7 +144,7 @@ namespace Backup
                         var paramName = matchSwitchOrName.Groups[1].Value.ToLower();
                         if (!parameterMap.ContainsKey(paramName))
                         {
-                            PrettyPrint.ErrorWriteLine($"[Params] No parameter named '{paramName}'!", ConsoleColor.Red);
+                            PrettyPrint.WriteLine($"[Params] No parameter named '{paramName}'!", OutputType.Error);
                             valid = false;
                             continue;
                         }
@@ -172,7 +172,7 @@ namespace Backup
                             char flag = flags[i];
                             if (!parameterFlagMap.ContainsKey(flag))
                             {
-                                PrettyPrint.ErrorWriteLine($"[Params] No parameter with flag '{flag}'!", ConsoleColor.Red);
+                                PrettyPrint.WriteLine($"[Params] No parameter with flag '{flag}'!", OutputType.Error);
                                 valid = false;
                                 break;
                             }
@@ -207,7 +207,7 @@ namespace Backup
                         // Positional parameter
                         if (!paramAvailable)
                         {
-                            PrettyPrint.ErrorWriteLine($"[Params] No available parameter to assign value '{arg}'!", ConsoleColor.Red);
+                            PrettyPrint.WriteLine($"[Params] No available parameter to assign value '{arg}'!", OutputType.Error);
                             valid = false;
                             continue;
                         }
@@ -229,7 +229,7 @@ namespace Backup
                     var matchPlainValue = regexPlainValue.Match(arg);
                     if (!matchPlainValue.Success)
                     {
-                        PrettyPrint.ErrorWriteLine($"[Params] Missing value for parameter '{paramToSet.LongName}'!", ConsoleColor.Red);
+                        PrettyPrint.WriteLine($"[Params] Missing value for parameter '{paramToSet.LongName}'!", OutputType.Error);
                         valid = false;
                         continue;
                     }
@@ -238,14 +238,14 @@ namespace Backup
                 //
                 if (paramToSet is null)
                 {
-                    PrettyPrint.ErrorWriteLine($"[Params] Unknown argument '{arg}'!", ConsoleColor.Red);
+                    PrettyPrint.WriteLine($"[Params] Unknown argument '{arg}'!", OutputType.Error);
                     valid = false;
                     continue;
                 }
 
                 if (previousParamDef != null)
                 {
-                    PrettyPrint.ErrorWriteLine($"[Params] Missing value for parameter '{previousParamDef.LongName}'!", ConsoleColor.Red);
+                    PrettyPrint.WriteLine($"[Params] Missing value for parameter '{previousParamDef.LongName}'!", OutputType.Error);
                 }
 
                 object? parsedValue = null;
@@ -256,21 +256,21 @@ namespace Backup
                 }
                 catch (Exception)
                 {
-                    PrettyPrint.ErrorWriteLine($"[Params] Argument value '{argValue}' for parameter '{paramToSet.LongName}' could not be converted to '{paramToSet.GetValueType().Name}'!", ConsoleColor.Red);
+                    PrettyPrint.WriteLine($"[Params] Argument value '{argValue}' for parameter '{paramToSet.LongName}' could not be converted to '{paramToSet.GetValueType().Name}'!", OutputType.Error);
                     valid = false;
                 }
 
                 // Assign parsed value
                 if (!paramToSet.SetValue(parsedValue))
                 {
-                    PrettyPrint.ErrorWriteLine($"[Params]  - {paramToSet.LongName}: {paramToSet.Description}", ConsoleColor.Yellow);
+                    PrettyPrint.WriteLine($"[Params]  -{paramToSet.Flag}, --{paramToSet.LongName}: {paramToSet.Description}", OutputType.Error, ConsoleColor.Yellow);
                     valid = false;
                 }
             }
 
             if (previousParamDef != null)
             {
-                PrettyPrint.ErrorWriteLine($"[Params] Missing value for parameter '{previousParamDef.LongName}'!", ConsoleColor.Red);
+                PrettyPrint.WriteLine($"[Params] Missing value for parameter '{previousParamDef.LongName}'!", OutputType.Error);
                 valid = false;
             }
 
@@ -279,15 +279,15 @@ namespace Backup
             {
                 if (param.Mandatory && !param.IsSet)
                 {
-                    PrettyPrint.ErrorWriteLine($"[Params] Parameter {param.LongName} is required!", ConsoleColor.Yellow);
-                    PrettyPrint.ErrorWriteLine($"[Params]  - {param.LongName}: {param.Description}", ConsoleColor.Yellow);
+                    PrettyPrint.WriteLine($"[Params] Parameter {param.LongName} is required!", OutputType.Error, ConsoleColor.Yellow);
+                    PrettyPrint.WriteLine($"[Params]  -{param.Flag}, --{param.LongName}: {param.Description}", OutputType.Error, ConsoleColor.Yellow);
                     valid = false;
                 }
             }
 
             if (!valid)
             {
-                PrettyPrint.ErrorWriteLine("[Params] Use -h, or --help to list all parameters.", ConsoleColor.Yellow);
+                PrettyPrint.WriteLine("[Params] Use -h, or --help to list all parameters.", OutputType.Help);
             }
 
             return valid ? ParamsState.Correct : ParamsState.InvalidError;
@@ -383,7 +383,7 @@ namespace Backup
                 IsSet = true;
                 return true;
             }
-            PrettyPrint.ErrorWriteLine($"[Params] Invalid value '{value}' for parameter '{LongName}', constrain check failed.", ConsoleColor.Red);
+            PrettyPrint.WriteLine($"[Params] Invalid value '{value}' for parameter '{LongName}', constrain check failed.", OutputType.Error);
             return false;
         }
         public override object? GetValueAsObject() => Value;

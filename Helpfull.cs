@@ -8,47 +8,54 @@ using System.Threading.Tasks;
 
 namespace Backup
 {
-    internal static class PrettyPrint
+    public enum OutputType
     {
-        internal static void WriteLine(string text, ConsoleColor color)
+        Success,
+        Info,
+        Help,
+        Danger,
+        Warning,
+        Error,
+    }
+
+    public static class PrettyPrint
+    {
+        public static bool supressInfoOutput = false;
+        private static void Writer<T>(T obj, OutputType outputType, Func<TextWriter, Action<T>> map, ConsoleColor? color = null)
         {
-            var currentColor = Console.ForegroundColor;
-            Console.ForegroundColor = color;
-
-            Console.WriteLine(text);
-
-            Console.ForegroundColor = currentColor;
+            switch (outputType)
+            {
+                case OutputType.Success:
+                    WriteUniversal(obj, color ?? ConsoleColor.Green, map(Console.Out));
+                    break;
+                case OutputType.Info:
+                    if (!supressInfoOutput)
+                    {
+                        WriteUniversal(obj, color ?? ConsoleColor.Blue, map(Console.Out));
+                    }
+                    break;
+                case OutputType.Help:
+                    WriteUniversal(obj, color ?? ConsoleColor.Yellow, map(Console.Out));
+                    break;
+                case OutputType.Danger:
+                case OutputType.Warning:
+                    WriteUniversal(obj, color ?? ConsoleColor.DarkYellow, map(Console.Out));
+                    break;
+                case OutputType.Error:
+                    WriteUniversal(obj, color ?? ConsoleColor.Red, map(Console.Error));
+                    break;
+            }
         }
-        internal static void Write(string text, ConsoleColor color)
+        public static void WriteLine(string text, OutputType outputType, ConsoleColor? color = null)
         {
-            var currentColor = Console.ForegroundColor;
-            Console.ForegroundColor = color;
-
-            Console.Write(text);
-
-            Console.ForegroundColor = currentColor;
+            Writer(text, outputType, w => w.WriteLine, color);
         }
-
-        internal static void ErrorWriteLine(string text, ConsoleColor color)
+        public static void Write(string text, OutputType outputType, ConsoleColor? color = null)
         {
-            var currentColor = Console.ForegroundColor;
-            Console.ForegroundColor = color;
-
-            Console.Error.WriteLine(text);
-
-            Console.ForegroundColor = currentColor;
-        }
-        internal static void ErrorWrite(string text, ConsoleColor color)
-        {
-            var currentColor = Console.ForegroundColor;
-            Console.ForegroundColor = color;
-
-            Console.Error.Write(text);
-
-            Console.ForegroundColor = currentColor;
+            Writer(text, outputType, w => w.Write, color);
         }
 
-        internal static void WriteUniversal<T>(T obj, ConsoleColor color, Action<T> writer)
+        public static void WriteUniversal<T>(T obj, ConsoleColor color, Action<T> writer)
         {
             var currentColor = Console.ForegroundColor;
             Console.ForegroundColor = color;
@@ -58,17 +65,17 @@ namespace Backup
             Console.ForegroundColor = currentColor;
         }
 
-        internal static void WriteLine()
+        public static void WriteLine()
         {
             Console.WriteLine();
         }
 
 
-        internal const long KiloByte = 1024;
-        internal const long MegaByte = 1024 * KiloByte;
-        internal const long GigaByte = 1024 * MegaByte;
+        public const long KiloByte = 1024;
+        public const long MegaByte = 1024 * KiloByte;
+        public const long GigaByte = 1024 * MegaByte;
 
-        internal static string Bytes(long bytes)
+        public static string Bytes(long bytes)
         {
             if (bytes > GigaByte)
             {
@@ -87,12 +94,12 @@ namespace Backup
         }
     }
 
-    internal static class StringExtensions
+    public static class StringExtensions
     {
-        internal static string SubstituteVariables(this string data, Config config) => config.SubstituteVaribales(data);
+        public static string SubstituteVariables(this string data, Config config) => config.SubstituteVaribales(data);
     }
 
-    internal class FileInfoComparer : IComparer<FileInfo>
+    public class FileInfoComparer : IComparer<FileInfo>
     {
         public int Compare(FileInfo? x, FileInfo? y)
         {
@@ -113,16 +120,16 @@ namespace Backup
         }
     }
 
-    internal static class Saves
+    public static class Saves
     {
-        internal static FileInfo[] GetFileSaves(string pattern, string dirPath)
+        public static FileInfo[] GetFileSaves(string pattern, string dirPath)
         {
             var regex = new Regex(pattern);
             var dirInfo = new DirectoryInfo(dirPath);
             var saves = dirInfo.GetFiles("", SearchOption.TopDirectoryOnly);
             return saves.Where(f => regex.IsMatch(f.Name)).ToArray();
         }
-        internal static DirectoryInfo[] GetFolderSaves(string pattern, string dirPath)
+        public static DirectoryInfo[] GetFolderSaves(string pattern, string dirPath)
         {
             var regex = new Regex(pattern);
             var dirInfo = new DirectoryInfo(dirPath);
@@ -131,7 +138,7 @@ namespace Backup
         }
     }
 
-    internal enum SaveType
+    public enum SaveType
     {
         None,
         Directory,
