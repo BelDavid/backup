@@ -122,14 +122,14 @@ namespace Backup
 
     public static class Saves
     {
-        public static FileInfo[] GetFileSaves(string pattern, string dirPath)
+        public static FileInfo[] GetFileSaves(string dirPath, string pattern)
         {
             var regex = new Regex(pattern);
             var dirInfo = new DirectoryInfo(dirPath);
             var saves = dirInfo.GetFiles("", SearchOption.TopDirectoryOnly);
             return saves.Where(f => regex.IsMatch(f.Name)).ToArray();
         }
-        public static DirectoryInfo[] GetFolderSaves(string pattern, string dirPath)
+        public static DirectoryInfo[] GetFolderSaves(string dirPath, string pattern)
         {
             var regex = new Regex(pattern);
             var dirInfo = new DirectoryInfo(dirPath);

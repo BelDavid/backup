@@ -160,22 +160,22 @@ if (paramGame.Value == "list")
             case GameConfig.BackupMethods.listd:
                 try
                 {
-                    PrettyPrint.WriteLine($"   saves: [{string.Join(", ", Saves.GetFolderSaves(gc.savePattern, gc.saveDirPath).Select(s => s.Name))}]", OutputType.Help, ConsoleColor.DarkYellow);
+                    PrettyPrint.WriteLine($"   saves: [{string.Join(", ", Saves.GetFolderSaves(gc.saveDirPath, gc.savePattern).Select(s => s.Name))}]", OutputType.Help, ConsoleColor.DarkYellow);
                 }
                 catch (Exception ex)
                 {
-                    PrettyPrint.WriteLine($"   saves: Failed to load potential saves. {ex.Message}", OutputType.Error);
+                    PrettyPrint.WriteLine($"   saves: Failed to load potential saves. {ex.Message}", OutputType.Warning, ConsoleColor.Red);
                     continue;
                 }
                 break;
             case GameConfig.BackupMethods.listf:
                 try
                 {
-                    PrettyPrint.WriteLine($"   saves: [{string.Join(", ", Saves.GetFileSaves(gc.savePattern, gc.saveDirPath).Select(s => s.Name))}]", OutputType.Help, ConsoleColor.DarkYellow);
+                    PrettyPrint.WriteLine($"   saves: [{string.Join(", ", Saves.GetFileSaves(gc.saveDirPath, gc.savePattern).Select(s => s.Name))}]", OutputType.Help, ConsoleColor.DarkYellow);
                 }
                 catch (Exception ex)
                 {
-                    PrettyPrint.WriteLine($"   saves: Failed to load potential saves. {ex.Message}", OutputType.Error);
+                    PrettyPrint.WriteLine($"   saves: Failed to load potential saves. {ex.Message}", OutputType.Warning, ConsoleColor.Red);
                     continue;
                 }
                 break;
@@ -276,7 +276,7 @@ switch (gameConfig.BackupMethod)
         break;
 
     case GameConfig.BackupMethods.listd:
-        var savesd = Saves.GetFolderSaves(gameConfig.savePattern, gameConfig.saveDirPath);
+        var savesd = Saves.GetFolderSaves(gameConfig.saveDirPath, gameConfig.savePattern);
         DirectoryInfo? dirInfoToBackup = null;
 
         if (!paramSave.IsSet)
@@ -306,7 +306,7 @@ switch (gameConfig.BackupMethod)
         break;
 
     case GameConfig.BackupMethods.listf:
-        var savesf = Saves.GetFileSaves(gameConfig.savePattern, gameConfig.saveDirPath);
+        var savesf = Saves.GetFileSaves(gameConfig.saveDirPath, gameConfig.savePattern);
         FileInfo? fileInfoToBackup = null;
         
         if (!paramSave.IsSet)
@@ -463,7 +463,7 @@ if (!paramOmit.IsSet)
 }
 else
 {
-    PrettyPrint.WriteLine("Omiting Backup", OutputType.Info);
+    PrettyPrint.WriteLine("Omiting Backup.", OutputType.Info);
 }
 #endregion
 
