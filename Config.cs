@@ -4,20 +4,23 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Backup
+namespace BackupNS
 {
 #pragma warning disable 0649
 #pragma warning disable 8602
 #pragma warning disable 8604
+#pragma warning disable 8618
+#pragma warning disable 8601
     public class Config
     {
         // -- DATA --
-        public Dictionary<string, string>? variables;
-        public string? backupsDirPath;
+        public Dictionary<string, string> variables;
+        public string backupsDirPath;
 
-        public GameConfig[]? gameConfigs;
+        public GameConfig[] gameConfigs;
         // ----------
 
         private readonly Dictionary<string, string> variableMap = new();
@@ -49,7 +52,6 @@ namespace Backup
             {
                 // Build Variable map
                 variableMap.Clear();
-                var fields = this.GetType().GetFields().Where(field => field.FieldType == typeof(string));
                 foreach (var (varName, varValue) in variables)
                 {
                     var varNameLower = "$" + varName.ToLower();
@@ -115,6 +117,11 @@ namespace Backup
             return valid;
         }
 
+        /// <summary>
+        /// Returns gameConfig
+        /// </summary>
+        /// <param name="shortName"></param>
+        /// <returns></returns>
         public GameConfig this[string shortName] => gameConfigMap[shortName];
         public bool ContainsGame(string shortName) => gameConfigMap.ContainsKey(shortName);
     }
@@ -123,19 +130,20 @@ namespace Backup
     public class GameConfig
     {
         // -- DATA --
-        public string? shortName;
-        public string? fullName;
-        public string? backupDirName;
-        public string? savePattern;
+        public string shortName;
+        public string fullName;
+        public string backupDirName;
+        public string savePattern;
 
-        public string? backupMethod;
-        public string? saveDirPath;
+        public string backupMethod;
+        public string saveDirPath;
 
         public Dictionary<string, string> saveMap;
 
         private BackupMethods __backupMethod;
         // ----------
         public BackupMethods BackupMethod => __backupMethod;
+        private Regex regexSavePattern;
 
         public bool ValidateAndBuild(Config config)
         {
@@ -201,27 +209,45 @@ namespace Backup
                         }
                     }
                     break;
-                case BackupMethods.listd:
-                case BackupMethods.listf:
+                case BackupMethods.list:
                     if (string.IsNullOrWhiteSpace(savePattern))
                     {
                         savePattern = ".+";
                     }
+                    regexSavePattern = new Regex(savePattern);
                     break;
             }
-
             return valid;
         }
+
+        public IEnumerable<SaveConf> GetSaves() =>
+            BackupMethod switch
+            {
+                BackupMethods.all =>
+                    from _ in Enumerable.Repeat(1, 1)
+                    select new SaveConf(null, saveDirPath),
+                BackupMethods.map =>
+                    from kv in saveMap
+                    select new SaveConf(kv.Key, Path.Combine(saveDirPath, kv.Value)),
+                BackupMethods.list => 
+                    from savePath in Directory.GetFileSystemEntries(saveDirPath)
+                    let saveName = Saves.GetName(savePath)
+                    where regexSavePattern.IsMatch(saveName)
+                    select new SaveConf(saveName.NormalizeSaveName(), savePath),
+                _ => throw new NotImplementedException(),
+            };
+
 
         public enum BackupMethods
         {
             all,
             map,
-            listd,
-            listf
+            list
         }
     }
 #pragma warning restore 0649
 #pragma warning restore 8602
 #pragma warning restore 8604
+#pragma warning restore 8618
+#pragma warning restore 8601
 }

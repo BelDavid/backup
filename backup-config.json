@@ -15,7 +15,7 @@
             "shortName": "factorio",
             "fullName": "Factorio",
             "backupDirName": "Factorio",
-            "backupMethod": "listf",
+            "backupMethod": "list",
             "savePattern": "^(?!_autosave).+\\.zip$",
             "saveDirPath": "$AppData\\Roaming\\Factorio\\saves"
         },
@@ -51,7 +51,7 @@
             "backupDirName": "Minecraft",
             "saveDirPath": "$AppData\\Roaming\\.minecraft\\saves",
             "savePattern": "",
-            "backupMethod": "listd"
+            "backupMethod": "list"
         },
         {
             "shortName": "mcs",

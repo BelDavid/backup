@@ -8,16 +8,45 @@
       "commandName": "Project",
       "commandLineArgs": "-h"
     },
-    "Backup nms -oOq": {
+    "Backup test0 programs.cs": {
       "commandName": "Project",
-      "commandLineArgs": "nms -oOq"
+      "commandLineArgs": "test0 programs.cs"
     },
-    "Backup": {
-      "commandName": "Project"
-    },
-    "Backup nms --dry -ck2": {
+    "Backup test0 program.cs -f": {
       "commandName": "Project",
-      "commandLineArgs": "nms --dry -ck2"
+      "commandLineArgs": "test0 program.cs -f"
+    },
+    "Backup test0 program.cs -bck2": {
+      "commandName": "Project",
+      "commandLineArgs": "test0 program.cs -bck2"
+    },
+    "Backup test1 bin -f": {
+      "commandName": "Project",
+      "commandLineArgs": "test1 bin -f"
+    },
+    "Backup test2 debug -f": {
+      "commandName": "Project",
+      "commandLineArgs": "test2 debug -f"
+    },
+    "Backup test2 fake": {
+      "commandName": "Project",
+      "commandLineArgs": "test2 fake"
+    },
+    "Backup test3": {
+      "commandName": "Project",
+      "commandLineArgs": "test3"
+    },
+    "Backup test2 invalid": {
+      "commandName": "Project",
+      "commandLineArgs": "test2 invalid"
+    },
+    "Backup all -ck2": {
+      "commandName": "Project",
+      "commandLineArgs": "all -ck2"
+    },
+    "Backup test3 asdf": {
+      "commandName": "Project",
+      "commandLineArgs": "test3 asdf"
     }
   }
 }

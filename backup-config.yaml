@@ -21,20 +21,19 @@ gameConfigs:
   #  - fullName:        fancy name used in output messages
   #  - backupDirName:   name of the subdirectory in 'backupsDirPath' to store created backups (Created if doesn't exist)
   #  - saveDirPath:     directory containing game saves to backup
-  #  - backupMethod:    all | map | listf | listd  (consult README.md for more information)
+  #  - backupMethod:    all | map | list
   #       - all:    backup whole directory or file defined in 'saveDirPath'
   #       - map:    backup a directory or file further specified in 'saveMap'.   saveDirPath/saveMap[`key`]  where `key` is provided by -s, --save parameter
-  #       - listd:  backup a subdirectory located in 'saveDirPath'. param -s, --save specifies which subdirectory
-  #       - listf:  backup a file located in 'saveDirPath'. param -s, --save specifies which file
+  #       - list:   backup a file or subdirectory located in 'saveDirPath'. param -s, --save specifies which file/subdirectory
   #
   #  - saveMap:         required for backup method 'map'
-  #  - savePattern:     optional, used by backup methods 'listd' and 'listf'. Regex pattern to filter files/directories.
+  #  - savePattern:     optional, used by backup method 'list'. Regex pattern to filter files/directories.
 
   - shortName: factorio
     fullName: Factorio
     backupDirName: Factorio
     saveDirPath: $AppData\Roaming\Factorio\saves
-    backupMethod: listf
+    backupMethod: list
     savePattern: ^(?!_autosave).+\.zip$
 
   - shortName: nms
@@ -64,7 +63,7 @@ gameConfigs:
     fullName: Minecraft
     backupDirName: Minecraft
     saveDirPath: $AppData\Roaming\.minecraft\saves
-    backupMethod: listd
+    backupMethod: list
     #savePattern: ''
 
   - shortName: mcs

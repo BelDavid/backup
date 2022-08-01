@@ -6,8 +6,9 @@
 # Output
 ### Exit codes:
  - 0 -> _Everything OK_  
- - 1 -> _Prechecks Failed_  
- - 2 -> _Backup Failed_  
+ - 1 -> _Parameters Not Set Correctly_  
+ - 2 -> _Init Failed_  
+ - 3 -> _Backup Failed_  
 
 ### Text Output Colors:
  - Green:  _Success_  
